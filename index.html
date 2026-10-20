@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IDP-2026 — Maksym Pyslar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#eef1f0;
+    --paper:#ffffff;
+    --ink:#14213d;
+    --ink-soft:#5c6672;
+    --ink-faint:#8b93a0;
+    --border:#dde2e5;
+    --pass:#1f7a4c;
+    --pass-bg:#e6f4ec;
+    --prog:#a8730a;
+    --prog-bg:#faf1de;
+    --todo:#8b93a0;
+    --todo-bg:#eef0f2;
+    --accent:#2f5f8a;
+    --accent-soft:#e7eff5;
+    --high:#a3402c;
+    --high-bg:#f7e9e5;
+    --display:'Space Grotesk',sans-serif;
+    --body:'IBM Plex Sans',sans-serif;
+    --mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      linear-gradient(180deg,var(--bg) 0%, var(--bg) 100%);
+    color:var(--ink);
+    font-family:var(--body);
+    line-height:1.5;
+    padding:0 0 80px 0;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px;}
+
+  /* ---------- Header / run summary ---------- */
+  .runbar{
+    background:var(--ink);
+    color:#fff;
+    padding:34px 0 26px 0;
+    border-bottom:4px solid var(--accent);
+  }
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:#9fb3d1;
+    margin:0 0 10px 0;
+  }
+  h1{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:34px;
+    margin:0 0 6px 0;
+    letter-spacing:-0.01em;
+  }
+  .sub{
+    color:#c3ccd9;
+    font-size:15px;
+    margin:0 0 22px 0;
+  }
+  .meta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px 28px;
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:#c3ccd9;
+    margin-bottom:22px;
+  }
+  .meta-row b{color:#fff;font-weight:600;}
+
+  .runstat{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:10px;
+    padding:16px 18px;
+  }
+  .runstat .pct{
+    font-family:var(--display);
+    font-size:30px;
+    font-weight:700;
+    min-width:70px;
+  }
+  .runstat .bar-track{
+    flex:1;
+    height:10px;
+    background:rgba(255,255,255,.14);
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .runstat .bar-fill{
+    height:100%;
+    background:linear-gradient(90deg,#3a7a52,#57a374);
+    width:0%;
+    transition:width .4s ease;
+  }
+  .runstat .label{font-family:var(--mono);font-size:12px;color:#c3ccd9;}
+  .target-note{
+    font-size:13px;
+    color:#c3ccd9;
+    margin-top:12px;
+  }
+  .target-note b{color:#e8c77a;}
+
+  /* ---------- Phase sections ---------- */
+  .phase{margin-top:44px;}
+  .phase-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:16px;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:10px;
+    margin-bottom:18px;
+  }
+  .phase-title{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:20px;
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  .phase-tag{
+    font-family:var(--mono);
+    font-size:12px;
+    background:var(--ink);
+    color:#fff;
+    padding:2px 8px;
+    border-radius:4px;
+  }
+  .phase-dates{
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:var(--ink-soft);
+  }
+  .phase-progress{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--ink-soft);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .mini-track{width:90px;height:6px;background:var(--todo-bg);border-radius:4px;overflow:hidden;}
+  .mini-fill{height:100%;background:var(--pass);width:0%;transition:width .4s ease;}
+  .phase-blurb{
+    font-size:14px;
+    color:var(--ink-soft);
+    margin:-6px 0 20px 0;
+  }
+
+  /* ---------- Test case card ---------- */
+  .case{
+    background:var(--paper);
+    border:1px solid var(--border);
+    border-radius:10px;
+    margin-bottom:16px;
+    overflow:hidden;
+  }
+  .case-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:14px 18px;
+    border-bottom:1px solid var(--border);
+    cursor:pointer;
+    user-select:none;
+  }
+  .case-head-left{display:flex;align-items:center;gap:12px;min-width:0;}
+  .case-id{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--ink-faint);
+    white-space:nowrap;
+  }
+  .case-title{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:16px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .priority{
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    padding:3px 8px;
+    border-radius:100px;
+    white-space:nowrap;
+  }
+  .priority.high{background:var(--high-bg);color:var(--high);}
+  .priority.medium{background:var(--prog-bg);color:var(--prog);}
+
+  .status-badge{
+    font-family:var(--mono);
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:.06em;
+    padding:5px 10px;
+    border-radius:6px;
+    white-space:nowrap;
+  }
+  .status-badge.todo{background:var(--todo-bg);color:var(--todo);}
+  .status-badge.progress{background:var(--prog-bg);color:var(--prog);}
+  .status-badge.pass{background:var(--pass-bg);color:var(--pass);}
+
+  .chev{
+    font-size:12px;
+    color:var(--ink-faint);
+    transition:transform .2s ease;
+    flex-shrink:0;
+  }
+  .case.open .chev{transform:rotate(180deg);}
+
+  .case-body{
+    padding:0 18px 18px 18px;
+    display:none;
+  }
+  .case.open .case-body{display:block;}
+
+  .field{margin-top:14px;}
+  .field-label{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    margin-bottom:6px;
+  }
+  .precondition{
+    font-size:13.5px;
+    color:var(--ink-soft);
+    background:var(--todo-bg);
+    border-left:3px solid var(--todo);
+    padding:8px 12px;
+    border-radius:0 6px 6px 0;
+  }
+  .expected{
+    font-size:13.5px;
+    color:var(--pass);
+    background:var(--pass-bg);
+    border-left:3px solid var(--pass);
+    padding:8px 12px;
+    border-radius:0 6px 6px 0;
+  }
+  .steps{list-style:none;margin:0;padding:0;}
+  .step{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:7px 0;
+    border-bottom:1px solid #f1f2f4;
+    font-size:14px;
+  }
+  .step:last-child{border-bottom:none;}
+  .step input[type=checkbox]{
+    margin-top:3px;
+    width:16px;height:16px;
+    accent-color:var(--pass);
+    flex-shrink:0;
+    cursor:pointer;
+  }
+  .step label{cursor:pointer;}
+  .step.checked label{color:var(--ink-faint);text-decoration:line-through;}
+  .resources{
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+  .resources i{color:var(--ink-faint);}
+  textarea.notes{
+    width:100%;
+    min-height:56px;
+    resize:vertical;
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:8px 10px;
+    font-family:var(--body);
+    font-size:13.5px;
+    color:var(--ink);
+    background:#fbfbfa;
+  }
+  textarea.notes:focus{outline:2px solid var(--accent-soft);border-color:var(--accent);}
+
+  /* ---------- Footer ---------- */
+  .footer{
+    margin-top:48px;
+    background:var(--accent-soft);
+    border:1px solid #cfe0ee;
+    border-radius:10px;
+    padding:20px 22px;
+  }
+  .footer h3{
+    font-family:var(--display);
+    font-size:15px;
+    margin:0 0 8px 0;
+  }
+  .footer p{font-size:13.5px;color:var(--ink-soft);margin:0 0 8px 0;}
+  .footer p:last-child{margin-bottom:0;}
+  .save-note{
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--ink-faint);
+    text-align:center;
+    margin-top:18px;
+  }
+
+  @media (max-width:600px){
+    h1{font-size:26px;}
+    .case-title{max-width:150px;}
+    .runstat{flex-wrap:wrap;}
+  }
+</style>
+</head>
+<body>
+
+<div class="runbar">
+  <div class="wrap">
+    <p class="eyebrow">Individual Development Plan · Test Suite IDP-2026</p>
+    <h1>Maksym Pyslar — QA Engineer</h1>
+    <p class="sub">Lead: Tetiana Kornyk · Review cadence: check-ins as needed, full re-assessment in 12 months</p>
+    <div class="meta-row">
+      <span>CURRENT LEVEL: <b>Senior 1</b></span>
+      <span>TARGET LEVEL: <b>Senior 2</b></span>
+      <span>LAST SCORE: <b>50.8 / 75 (67.7%)</b></span>
+      <span>NEXT ASSESSMENT: <b id="reviewDate">July 2027</b></span>
+    </div>
+    <div class="runstat">
+      <div class="pct" id="overallPct">0%</div>
+      <div class="bar-track"><div class="bar-fill" id="overallBar"></div></div>
+      <div class="label" id="overallLabel">0 / 72 steps passed</div>
+    </div>
+    <p class="target-note">Goal: the Senior 2 threshold is <b>50 pts</b> and July 2026 came in at <b>50.8</b> — over the line, but by less than a point, and carried there by process leadership rather than technical breadth. The 10 test cases below close the four technical areas still sitting at Middle level over the next <b>12 months</b>, so that Senior 2 is held on the whole profile and <b>Senior 3 (55)</b> comes into range.</p>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ================= PHASE 1 ================= -->
+  <div class="phase" data-phase="p1">
+    <div class="phase-head">
+      <div class="phase-title"><span class="phase-tag">Phase 1</span> Rebuilding the technical layer</div>
+      <div class="phase-dates">Months 1–4</div>
+    </div>
+    <div class="phase-progress" style="margin-bottom:16px;">
+      <span>Phase progress</span>
+      <div class="mini-track"><div class="mini-fill" data-qfill="p1"></div></div>
+      <span data-qlabel="p1">0%</span>
+    </div>
+    <p class="phase-blurb">This is where the plan puts its weight. Four skill areas sit at Middle level — API Testing 2.7, Networks &amp; Protocols 2.5, Web Applications 2.7, Databases &amp; SQL 2.0 — and API is also where your self-assessment ran furthest ahead of the review, by 1.33 points, the largest gap on the form. The pattern is not a knowledge problem: these are the areas your projects stopped asking you for, so the knowledge went quiet. The fix is therefore structural rather than educational — take ownership of the API layer on your project, and the proxy and network layer come with it, because they are the same investigation seen from different sides. Databases are the exception and are scoped accordingly: that case is almost entirely theoretical, because you may land somewhere that gives you no direct database work at all — the aim there is to read and reason about data rather than to query it fluently.</p>
+
+    <div class="case" data-case="QA-IDP-01">
+      <div class="case-head">
+        <div class="case-head-left">
+          <span class="case-id">QA-IDP-01</span>
+          <span class="case-title">API Testing — from decayed knowledge to owned layer</span>
+          <span class="priority high">High</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="status-badge todo" data-status="">NOT STARTED</span>
+          <span class="chev">▾</span>
+        </div>
+      </div>
+      <div class="case-body">
+        <div class="field">
+          <div class="field-label">Starting point</div>
+          <div class="precondition">The largest single gap on the form: <b>API Testing</b> scored 2.67 against a self-assessment of 4.0, with API concepts specifically at 2.0. The review note puts the cause plainly — without regular API practice the knowledge stopped being current. You have worked with Swagger and you rated yourself as proficient, and both of those are true of the person you were on a project that gave you API work. So this case is deliberately built around ownership rather than study: your lead's recommendation is that you take on the Swagger and Postman layer wherever you are working, with full API-level coverage of one epic as the target. The study half is three weeks; the ownership half is what stops it decaying again.</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Steps to learn</div>
+          <ul class="steps">
+            <li class="step"><input type="checkbox" data-step="0"><label>Restore the base quickly: request anatomy (method, URL, path vs query params, headers, body, auth), response anatomy (status, headers, body, timing), and the headers that actually matter — Content-Type, Accept, Authorization, cookies</label></li>
+            <li class="step"><input type="checkbox" data-step="1"><label>Status codes at precision: 401 vs 403, 400 vs 422, 404 vs 410, and the case that catches people — a 200 carrying an error in the body is itself the defect</label></li>
+            <li class="step"><input type="checkbox" data-step="2"><label>Have the Senior-level answers ready in your own words: the advantages of API testing, what must be checked, API vs web service, API vs UI testing, why the API layer is the best target for automation, and which classes of bug API testing finds that UI testing never will</label></li>
+            <li class="step"><input type="checkbox" data-step="3"><label>Claim the layer: make the Swagger / OpenAPI spec your source of truth on the project, and raise a spec issue whenever reality and the document disagree. This step is the one that matters most — the rest follows from having the responsibility</label></li>
+            <li class="step"><input type="checkbox" data-step="4"><label>Build a Postman collection covering one full epic end to end: chained requests, environment variables per environment, a pre-request script that fetches the token</label></li>
+            <li class="step"><input type="checkbox" data-step="5"><label>Assertions on every request — status, response time, key values, and <b>JSON schema validation</b> in particular. A silently changed schema is exactly the defect class that walks past UI testing and lands on mobile</label></li>
+            <li class="step"><input type="checkbox" data-step="6"><label>Negative cases at Senior depth: expired and malformed tokens, another user's resource id, missing required fields, wrong types, boundary values, oversized payloads, the same request submitted twice (idempotency)</label></li>
+            <li class="step"><input type="checkbox" data-step="7"><label>Run the collection from the command line with Newman, then get it running on a schedule or in CI so it reports without you</label></li>
+            <li class="step"><input type="checkbox" data-step="8"><label>Think in contracts: what happens to the mobile app when a field becomes optional, changes type, or disappears — and how you would catch that before the release rather than after it</label></li>
+          </ul>
+        </div>
+        <div class="field">
+          <div class="field-label">Expected result</div>
+          <div class="expected">Owns the API layer on his project — Swagger as the source of truth, spec discrepancies raised as issues. Answers the Senior-level API questions unprompted, including which defect classes API testing catches that UI testing cannot. Holds a Postman collection covering a full epic with chained requests, per-environment variables, token handling and assertions including JSON schema validation, running unattended through Newman on a schedule or in CI. Designs negative cases at depth — auth, ownership, types, boundaries, idempotency — and can say what a contract change would do to the mobile client and how he would catch it first.</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Resources</div>
+          <div class="resources"><i>Suggested:</i> Postman Learning Center · your project's own Swagger / OpenAPI spec · Newman documentation · OWASP API Security Top 10 for the negative-case vocabulary</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Notes / progress log</div>
+          <textarea class="notes" placeholder="Jot down questions, links you found useful, or what clicked..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="case" data-case="QA-IDP-02">
+      <div class="case-head">
+        <div class="case-head-left">
+          <span class="case-id">QA-IDP-02</span>
+          <span class="case-title">Networks, Protocols &amp; Proxy Tooling</span>
+          <span class="priority high">High</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="status-badge todo" data-status="">NOT STARTED</span>
+          <span class="chev">▾</span>
+        </div>
+      </div>
+      <div class="case-body">
+        <div class="field">
+          <div class="field-label">Starting point</div>
+          <div class="precondition">Client-server communication held at 3.0 with good theory behind it; the proxy sub-area came in at 2.0, and the note is blunt — no real understanding or experience there. Of everything in this phase, this is the gap that costs you the most day to day, because DevTools cannot see mobile traffic at all, and it also stops short the moment you need to change what comes back rather than just read it. Without a proxy in your hands, every bug living between the client and the API is a sealed box you have to pass to a developer. That is also the skill the Senior level is assessed on: telling a front-end fault from a back-end one from the response alone, and isolating a root cause across a distributed system. Your lead's recommendation here is one tool — deliberately small, because the tool itself is learned in an afternoon and the judgement that goes with it comes from using it on real bugs.</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Steps to learn</div>
+          <ul class="steps">
+            <li class="step"><input type="checkbox" data-step="0"><label>Install Charles or Proxyman, set it up against a real device with the CA certificate installed, and capture one complete flow from your own app</label></li>
+            <li class="step"><input type="checkbox" data-step="1"><label>HTTPS interception: why the certificate is needed at all, what SSL pinning does, and precisely what to ask the developers for when pinning blocks you</label></li>
+            <li class="step"><input type="checkbox" data-step="2"><label>The four things a proxy gives you that nothing else does — see real traffic, throttle the network, map a response to a fixed file, and breakpoint and edit a request in flight</label></li>
+            <li class="step"><input type="checkbox" data-step="3"><label>Map a response to a fixed error payload and watch how the app handles it. This is how you test error states and edge responses without asking anyone for a special build</label></li>
+            <li class="step"><input type="checkbox" data-step="4"><label>Throttle to 3G, high latency and packet loss, and run the same flow through each</label></li>
+            <li class="step"><input type="checkbox" data-step="5"><label>Write your own decision rule for front-end vs back-end fault from the response alone — status, body, timing, headers — then test the rule against five real bugs from your tracker and correct it</label></li>
+            <li class="step"><input type="checkbox" data-step="6"><label>DNS: what it resolves and what a DNS problem looks like from the user's side. Then the real version of it — the site opens for you and not for some users: what do you check, in what order, and why that order</label></li>
+            <li class="step"><input type="checkbox" data-step="7"><label>The protocol set in one line each: HTTP/1.1 vs HTTP/2, HTTPS and what TLS actually adds, WebSocket and what it changes about testing, TCP vs UDP</label></li>
+          </ul>
+        </div>
+        <div class="field">
+          <div class="field-label">Expected result</div>
+          <div class="expected">Uses a proxy tool as part of normal work: captures real mobile traffic, throttles the network, maps responses to test error states without a special build, and edits requests in flight. Explains HTTPS interception and SSL pinning and knows what to ask developers for when pinning blocks him. Has a tested rule for separating front-end from back-end faults from the response alone. Answers the DNS and "works for me, not for them" questions with an ordered diagnostic sequence, and defines the main protocols in his own words.</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Resources</div>
+          <div class="resources"><i>Suggested:</i> Charles Proxy or Proxyman documentation · MDN HTTP reference · your bug tracker, for the five real bugs the decision rule gets tested against</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Notes / progress log</div>
+          <textarea class="notes" placeholder="Jot down questions, links you found useful, or what clicked..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="case" data-case="QA-IDP-03">
+      <div class="case-head">
+        <div class="case-head-left">
+          <span class="case-id">QA-IDP-03</span>
+          <span class="case-title">Web Application Internals</span>
+          <span class="priority medium">Medium</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="status-badge todo" data-status="">NOT STARTED</span>
+          <span class="chev">▾</span>
+        </div>
+      </div>
+      <div class="case-body">
+        <div class="field">
+          <div class="field-label">Starting point</div>
+          <div class="precondition"><b>Web Applications</b> came in at 2.67 against your own 3.33, with DevTools and IFrame each scoring a point below your rating, and all three notes say the same thing in different words — the theory is there, the practical detail behind it isn't. IFrame and JavaScript scored lowest at 2.0, with the note that the answers lacked a practical angle. This is the lightest case in the phase and it belongs next to case 02, because most of it lives inside the same investigation: once you are reading real traffic through a proxy, cookies, tokens, storage and console errors stop being definitions and become the things you are already looking at.</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Steps to learn</div>
+          <ul class="steps">
+            <li class="step"><input type="checkbox" data-step="0"><label>Cookie vs session vs localStorage vs sessionStorage vs cache — one line each, and one bug you could file against each of the five</label></li>
+            <li class="step"><input type="checkbox" data-step="1"><label>The cookie attributes that actually produce bugs: HttpOnly, Secure, SameSite, domain, path, expiry — and what breaks when each is set wrong</label></li>
+            <li class="step"><input type="checkbox" data-step="2"><label>Token lifecycle end to end — issued, stored, refreshed, expired, revoked — and why most "it logged me out for no reason" reports live in the refresh step</label></li>
+            <li class="step"><input type="checkbox" data-step="3"><label>Authentication vs authorization as testable things rather than definitions: two real bugs from your product, one of each, tied back to 401 vs 403</label></li>
+            <li class="step"><input type="checkbox" data-step="4"><label>DevTools past the Network tab: Console (a JavaScript error is a fileable bug even when the screen looks fine), Application (storage, cache, service workers), Performance, throttling, device emulation</label></li>
+            <li class="step"><input type="checkbox" data-step="5"><label>What JavaScript is responsible for on a page — behaviour, dynamic content, client-side validation, requests — and why validation that exists only on the client is a security finding rather than a feature</label></li>
+            <li class="step"><input type="checkbox" data-step="6"><label>Editing data on a live page: DOM editing, removing a disabled attribute, changing a hidden value — and why that is a legitimate test of server-side validation, not a trick</label></li>
+            <li class="step"><input type="checkbox" data-step="7"><label>IFrame properly: the same-origin policy, why cookies and storage behave differently inside one, focus and scroll problems, and clickjacking as the security angle</label></li>
+            <li class="step"><input type="checkbox" data-step="8"><label>The REST constraints in one line each — client-server, stateless, cacheable, uniform interface, layered — and what each one gives you something to test</label></li>
+          </ul>
+        </div>
+        <div class="field">
+          <div class="field-label">Expected result</div>
+          <div class="expected">Separates cookie, session, localStorage, sessionStorage and cache with a bug example for each, and knows which cookie attributes cause which failures. Explains the token lifecycle and locates the "randomly logged out" class of report inside it. Distinguishes authentication from authorization with two real bugs from his own product. Works across the whole of DevTools rather than the Network tab, treats a console error as fileable, tests server-side validation by editing the page, and explains iframes including the same-origin policy and clickjacking. States the REST constraints and what each one makes testable.</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Resources</div>
+          <div class="resources"><i>Suggested:</i> MDN Web Docs — HTTP, Storage, Same-origin policy · Chrome DevTools documentation · OWASP Top 10 for the client-side validation and clickjacking angles</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Notes / progress log</div>
+          <textarea class="notes" placeholder="Jot down questions, links you found useful, or what clicked..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="case" data-case="QA-IDP-04">
+      <div class="case-head">
+        <div class="case-head-left">
+          <span class="case-id">QA-IDP-04</span>
+          <span class="case-title">Databases &amp; SQL — reading and reasoning about data</span>
+          <span class="priority medium">Medium</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="status-badge todo" data-status="">NOT STARTED</span>
+          <span class="chev">▾</span>
+        </div>
+      </div>
+      <div class="case-body">
+        <div class="field">
+          <div class="field-label">Starting point</div>
+          <div class="precondition"><b>Databases &amp; SQL</b> came in at 2.0 — both sub-areas equal, theory present, one stretch of practice a long time ago. Worth being clear about the cause: the projects you have been on have not given you much database work, so this is not a case of neglecting something that was available to you, and the next one may not give you any either. That is why this case is <b>deliberately almost entirely theoretical</b>. The aim is not fluency at writing queries — it is that you can read one a developer shows you and say what it returns, know what belongs in a database and what a screen will never reveal, and ask the right question when something looks wrong. That knowledge pays off even when someone else runs the query. With the API layer from case 01 in your hands, it is the other half of the same picture: a response with the right shape and the wrong data is only explainable from the data side.</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Steps to learn</div>
+          <ul class="steps">
+            <li class="step"><input type="checkbox" data-step="0"><label>How a relational database is put together: tables, columns, rows, data types — and map the main entities of a product you have tested onto them, on paper. If you can sketch roughly which tables a registration or a purchase touches, most of the rest follows</label></li>
+            <li class="step"><input type="checkbox" data-step="1"><label>Keys and constraints — primary key, foreign key, unique, nullable — and for each one the bug class it prevents when present and causes when missing. This is the highest-value item in the case: most data bugs you will meet are a missing or wrong constraint</label></li>
+            <li class="step"><input type="checkbox" data-step="2"><label>The query vocabulary at <i>reading</i> level: SELECT with WHERE, ORDER BY and LIMIT, and the aggregates — COUNT, SUM, AVG, MIN, MAX — with GROUP BY and HAVING. The target is being able to look at a query someone shows you and say what it will return, not to write them from memory</label></li>
+            <li class="step"><input type="checkbox" data-step="3"><label>Joins as a rule rather than as syntax: what INNER, LEFT, RIGHT, FULL and SELF each return from two tables. Knowing which join a question needs is the useful part; the exact wording can always be looked up</label></li>
+            <li class="step"><input type="checkbox" data-step="4"><label>Relational vs non-relational: what each one stores, how the data is shaped, and what that changes for you as a tester</label></li>
+            <li class="step"><input type="checkbox" data-step="5"><label>What lives in a database that no screen will ever show you: soft-deleted records still being returned, orphaned rows, duplicates, timestamps and timezone handling, statuses out of their legal sequence, fields the UI never renders. This is the list that turns into real questions during an investigation</label></li>
+            <li class="step"><input type="checkbox" data-step="6"><label>How test data gets prepared with SQL instead of by clicking through the app for twenty minutes — the idea and why it matters, so that you can ask for it or recognise when it would save the team time</label></li>
+            <li class="step"><input type="checkbox" data-step="7"><label><b>The one practical step, if your project allows it:</b> ask for read-only access to the test database, framed narrowly — occasional read access while investigating a bug, not a standing need. A small specific ask is far more likely to be granted than a broad one. If it is not available, agree with a developer that you can send them a data question when one comes up; the theory above is what lets you ask it precisely</label></li>
+          </ul>
+        </div>
+        <div class="field">
+          <div class="field-label">Expected result</div>
+          <div class="expected">Describes how a relational database is structured and can sketch which tables a familiar flow touches. Names what each key and constraint prevents, and what each join type returns. Reads a query he is shown and says what it will return. Separates relational from non-relational and what that changes for a tester. Lists what a database holds that no screen reveals, and knows how SQL-prepared test data would help. Has asked for read-only access where the project allows it, or arranged a route to a developer for data questions where it does not — and either way can frame the question precisely enough to be useful.</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Resources</div>
+          <div class="resources"><i>Suggested:</i> sqlbolt.com — short, browser-based, and worth working through for the reading skill even though nothing here requires it · <i>Learning SQL</i> (Beaulieu), first chapters, for structure and constraints · the schema of a product you test, if anyone will walk you through it once</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Notes / progress log</div>
+          <textarea class="notes" placeholder="Jot down questions, links you found useful, or what clicked..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PHASE 2 ================= -->
+  <div class="phase" data-phase="p2">
+    <div class="phase-head">
+      <div class="phase-title"><span class="phase-tag">Phase 2</span> Product risk &amp; release ownership</div>
+      <div class="phase-dates">Months 5–8</div>
+    </div>
+    <div class="phase-progress" style="margin-bottom:16px;">
+      <span>Phase progress</span>
+      <div class="mini-track"><div class="mini-fill" data-qfill="p2"></div></div>
+      <span data-qlabel="p2">0%</span>
+    </div>
+    <p class="phase-blurb">Proactivity about <i>process</i> scored 5 / 5; risk awareness about the <i>product</i> scored 3. You brought a project out of chaos — commenting discipline, checklists, your own search for a TMS, then TestRail rolled out and the team onboarded onto it — and the distance between "I improve how we work" and "I know where this product is fragile" is what these two cases close. They are deliberately compact — one risk map, and one document covering regression and release readiness — and they are the two cases that travel with you regardless of which project you are on, because both are about judgement rather than about a particular codebase.</p>
+
+    <div class="case" data-case="QA-IDP-05">
+      <div class="case-head">
+        <div class="case-head-left">
+          <span class="case-id">QA-IDP-05</span>
+          <span class="case-title">Product Risk Map &amp; Risk-Based Testing</span>
+          <span class="priority medium">Medium</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="status-badge todo" data-status="">NOT STARTED</span>
+          <span class="chev">▾</span>
+        </div>
+      </div>
+      <div class="case-body">
+        <div class="field">
+          <div class="field-label">Starting point</div>
+          <div class="precondition">Three sub-areas point the same way: risk-based testing and release readiness (3.0), risk awareness and proactivity (3.0), and regression (3.0). The pattern behind all three is that testing priority currently follows the delivery order rather than a risk assessment. Both are legitimate inputs — they are simply different ones, and at Senior 2 you are expected to hold the risk view and put it beside the business view when the two differ. One deliverable carries this case: a risk map with the reasoning written next to each score.</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Steps to learn</div>
+          <ul class="steps">
+            <li class="step"><input type="checkbox" data-step="0"><label>Risk = <b>likelihood × impact</b>. Score the two separately and keep them separate — collapsing them into one "importance" number is where a risk assessment quietly turns back into a priority list</label></li>
+            <li class="step"><input type="checkbox" data-step="1"><label>Evidence for likelihood, pulled rather than estimated: defect density per area from the tracker, how often developers change each area, complexity, external integrations, recent incidents. Evidence for impact: revenue path, how many users hit the flow, data loss, compliance exposure</label></li>
+            <li class="step"><input type="checkbox" data-step="2"><label>Build the risk map for your project — every functional area scored on both axes, with the <i>rationale</i> written beside each score. The rationale is the deliverable: a map of numbers with no reasoning behind it cannot be argued with or corrected</label></li>
+            <li class="step"><input type="checkbox" data-step="3"><label>Rank by risk, and where that ranking differs from the delivery order, write down why. The point is not to override the plan — it is to have both views visible when the decision gets made</label></li>
+            <li class="step"><input type="checkbox" data-step="4"><label>Review the map with the PM and a developer, and record where their view differs from yours. A risk map nobody pushed back on is usually one nobody read</label></li>
+            <li class="step"><input type="checkbox" data-step="5"><label>Re-score after each release and keep the history. A risk map written once is a document; one that moves is a tool — and it is what aims the regression tiering in the next case</label></li>
+          </ul>
+        </div>
+        <div class="field">
+          <div class="field-label">Expected result</div>
+          <div class="expected">Names the critical areas of his product unprompted, with the reasoning behind each. Holds a living risk map scored on likelihood and impact separately, built from tracker and change-history evidence rather than intuition, with the rationale written beside every score — reviewed with the PM and a developer, and re-scored after each release. Where the risk ranking and the delivery order differ, both views are written down and visible at the point the decision is made.</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Resources</div>
+          <div class="resources"><i>Suggested:</i> ISTQB Advanced Level Test Manager, chapter on risk-based testing · ISO/IEC 25010 quality characteristics as the vocabulary for impact · your own bug tracker and release history as the evidence base</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Notes / progress log</div>
+          <textarea class="notes" placeholder="Jot down questions, links you found useful, or what clicked..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="case" data-case="QA-IDP-06">
+      <div class="case-head">
+        <div class="case-head-left">
+          <span class="case-id">QA-IDP-06</span>
+          <span class="case-title">Regression Strategy &amp; Release Readiness</span>
+          <span class="priority medium">Medium</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="status-badge todo" data-status="">NOT STARTED</span>
+          <span class="chev">▾</span>
+        </div>
+      </div>
+      <div class="case-body">
+        <div class="field">
+          <div class="field-label">Starting point</div>
+          <div class="precondition">Two things from the review sit at opposite ends of the same skill. Regression scored 3.0 — the one dip in <b>Testing Types &amp; Test Levels</b>, which otherwise ran at 4–5 — because what was missing was the strategy layer: which areas are risk areas, and what justifies leaving something out. And release-readiness criteria have not been formulated yet, which is the other end of it: deciding when to stop. Your trade-off scoring was 5 / 5 and the urgent release you described was handled through planning rather than panic, so the judgement is already there; what is missing is the written form someone else can review. One framing worth adjusting: you described automation mainly as saving resources. It does — but the argument that carries at Senior 2 is regression confidence per release, and that is what decides which candidates are worth automating at all.</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Steps to learn</div>
+          <ul class="steps">
+            <li class="step"><input type="checkbox" data-step="0"><label>The four regression selection strategies by name — retest-all, regression test selection, test case prioritisation, hybrid — and the situation each one is actually correct for</label></li>
+            <li class="step"><input type="checkbox" data-step="1"><label>Tier the regression suite off the risk map: tier 1 on every build, tier 2 on every release, tier 3 monthly or when that area changes. Put the current execution time next to each tier, taken from your run history</label></li>
+            <li class="step"><input type="checkbox" data-step="2"><label><b>Decide what NOT to test in regression and write the justification.</b> This is one of the questions the Senior assessment asks almost word for word, and the defensible answer needs the risk map behind it — "we accept the risk in area X because likelihood is low and impact is contained" holds up; "we ran out of time" does not</label></li>
+            <li class="step"><input type="checkbox" data-step="3"><label>Impact analysis in writing: for five real changes, note beforehand what each could break and why, then check afterwards whether you were right. Read your own hit rate</label></li>
+            <li class="step"><input type="checkbox" data-step="4"><label>Pick two effectiveness metrics and baseline them now, so that at the re-assessment there is a before: escaped defects per release, defect detection percentage, suite execution time, flaky-test rate</label></li>
+            <li class="step"><input type="checkbox" data-step="5"><label>Rank automation candidates by <i>risk × execution frequency × stability</i> rather than by ease of scripting — the ranked list is the artefact, and it is what any future automation effort gets scoped from</label></li>
+            <li class="step"><input type="checkbox" data-step="6"><label>Exit criteria, entry criteria, Definition of Done and acceptance criteria as four distinct gates with four owners — then write the release-readiness checklist: tier-1 risk coverage, open defects by severity, regression run status, known-issues list, rollback plan. One page</label></li>
+            <li class="step"><input type="checkbox" data-step="7"><label>Produce a written go / no-go recommendation for one real release — risks accepted, risks still open, what would close each. Not a verdict; a recommendation that can be acted on or overruled in writing. Keep the known-issues list somewhere the PM and client can see it</label></li>
+          </ul>
+        </div>
+        <div class="field">
+          <div class="field-label">Expected result</div>
+          <div class="expected">Names the four regression selection strategies and when each applies, and runs a tiered suite derived from the risk map with execution time attached to each tier. Can state what is deliberately excluded from regression and defend it on risk grounds. Performs impact analysis in writing and knows his own hit rate, has two effectiveness metrics baselined, and holds an automation candidate list ranked by risk, frequency and stability. Separates exit, entry, DoD and acceptance criteria, keeps a one-page release-readiness checklist in use, and issues a written go / no-go recommendation per release listing accepted risks, open risks and what would close them.</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Resources</div>
+          <div class="resources"><i>Suggested:</i> ISTQB Advanced Level Test Manager — risk-based testing and release criteria · ISTQB Foundation, chapter 2 (change-related testing) · your own run history for execution time and flakiness, and your release history for the first recommendation</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Notes / progress log</div>
+          <textarea class="notes" placeholder="Jot down questions, links you found useful, or what clicked..."></textarea>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= PHASE 3 ================= -->
+  <div class="phase" data-phase="p3">
+    <div class="phase-head">
+      <div class="phase-title"><span class="phase-tag">Phase 3</span> Breadth &amp; the Senior 2 case</div>
+      <div class="phase-dates">Months 9–12</div>
+    </div>
+    <div class="phase-progress" style="margin-bottom:16px;">
+      <span>Phase progress</span>
+      <div class="mini-track"><div class="mini-fill" data-qfill="p3"></div></div>
+      <span data-qlabel="p3">0%</span>
+    </div>
+    <p class="phase-blurb">The weighting here follows how often each topic actually turns up in the work. Compatibility and mobile tooling get real depth, because almost any project puts both in front of you. Virtualization is kept deliberately small — it is the lowest-scoring area on the whole review at 1.0, but it is also the one least likely to come up in daily work, so the goal is vocabulary plus one afternoon of hands-on rather than a study project with nowhere to land. Performance is treated the same way: a refresher and one small JMeter task on a single endpoint. The plan closes with a calibration checkpoint before the re-assessment.</p>
+
+    <div class="case" data-case="QA-IDP-07">
+      <div class="case-head">
+        <div class="case-head-left">
+          <span class="case-id">QA-IDP-07</span>
+          <span class="case-title">Compatibility Depth, plus Performance Basics</span>
+          <span class="priority medium">Medium</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="status-badge todo" data-status="">NOT STARTED</span>
+          <span class="chev">▾</span>
+        </div>
+      </div>
+      <div class="case-body">
+        <div class="field">
+          <div class="field-label">Starting point</div>
+          <div class="precondition"><b>Non-functional Testing</b> scored 3.5 — solid, with two dips, and the weight here sits deliberately on the first of them. <b>Compatibility</b> scored 3.0 because the types didn't come out in full without prompting — after a nudge you opened the topic up well, but at Senior 2 that list should be automatic, since it is what a coverage matrix gets built from, and compatibility is the one non-functional area almost any project gives you every day. <b>Performance</b> also sat at 3.0, and it is deliberately the smaller half of this case: the base is real — you know which metrics matter and which test types exist, and you have JMeter behind you from a previous project — and the project isn't asking you for load testing right now. So the performance block is one refresher and one small applied task, enough to keep the skill alive and answer for it, not a project of its own.</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Steps to learn</div>
+          <ul class="steps">
+            <li class="step"><input type="checkbox" data-step="0"><label>The seven compatibility dimensions, automatic and unprompted: operating systems, browsers, devices, hardware, network conditions, versioning (app and OS), and backend or database versions</label></li>
+            <li class="step"><input type="checkbox" data-step="1"><label>Build the compatibility matrix for your project — covered today, not covered, and the risk behind each gap. This is the main deliverable of the case</label></li>
+            <li class="step"><input type="checkbox" data-step="2"><label>Versioning as a first-class dimension: an old app version against the current backend, the upgrade path (install old → update → is the data intact), and forced-update behaviour</label></li>
+            <li class="step"><input type="checkbox" data-step="3"><label>Cloud device farms — BrowserStack, Sauce Labs: what they would replace in a physical device pool, what they still cannot test, and whether any of the matrix gaps above are worth closing that way</label></li>
+            <li class="step"><input type="checkbox" data-step="4"><label>Mobile-specific non-functional dimensions that don't exist on web: battery drain, memory, app size, cold vs warm start, behaviour on a degrading network</label></li>
+            <li class="step"><input type="checkbox" data-step="5"><label><i>Performance, refresher:</i> separate load (expected volume), stress (beyond expected), volume (data size) and stability / endurance (over time) with one scenario each from your own product — and the metric set, response time, throughput, error rate, resource utilisation, plus why p95 and p99 tell you what an average hides</label></li>
+            <li class="step"><input type="checkbox" data-step="6"><label><i>Performance, one small applied task:</i> bring JMeter back on a single real endpoint from your case-01 collection — a simple load profile, run it, read the summary report, and write a short note on what the numbers mean and what you would do next. One endpoint is the whole scope; the point is that the skill is live and usable on the project if it is ever needed</label></li>
+          </ul>
+        </div>
+        <div class="field">
+          <div class="field-label">Expected result</div>
+          <div class="expected">Names all seven compatibility dimensions without prompting and maintains a compatibility matrix for his project with the risk attached to each gap, including version compatibility, the upgrade path, and a view on which gaps a device farm would close. Names the non-functional dimensions specific to mobile. On performance: separates load, stress, volume and stability with a scenario each, explains why percentiles beat averages, and has run one JMeter load profile against a real endpoint with a short written read of the result — enough to keep the skill live and to answer for it.</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Resources</div>
+          <div class="resources"><i>Suggested:</i> your current device pool as the matrix baseline · BrowserStack documentation · Apache JMeter documentation and its getting-started guide · web.dev on performance metrics and percentiles</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Notes / progress log</div>
+          <textarea class="notes" placeholder="Jot down questions, links you found useful, or what clicked..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="case" data-case="QA-IDP-08">
+      <div class="case-head">
+        <div class="case-head-left">
+          <span class="case-id">QA-IDP-08</span>
+          <span class="case-title">Mobile Tooling — Android Studio, Xcode, ADB</span>
+          <span class="priority medium">Medium</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="status-badge todo" data-status="">NOT STARTED</span>
+          <span class="chev">▾</span>
+        </div>
+      </div>
+      <div class="case-body">
+        <div class="field">
+          <div class="field-label">Starting point</div>
+          <div class="precondition"><b>Mobile Applications</b> is your strongest technical area at 4.0, and the geolocation case remains the best single piece of evidence in the whole review — a difference in the permissions model between an older iOS and Android, found in production, chased through to the cause, fixed, and still remembered accurately years later. The one sub-area sitting below the rest is the tooling at 3.0, named in the note as the growth area. In practice that is the difference between reporting that the app crashed and attaching the log that says why it crashed — and since you have already onboarded a colleague into test-case writing and documentation, raising a team's debugging standard is the same move applied to a different part of the job.</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Steps to learn</div>
+          <ul class="steps">
+            <li class="step"><input type="checkbox" data-step="0"><label>ADB as a daily tool: <code>adb devices</code>, <code>install</code>, <code>logcat</code> with filters, <code>shell</code>, <code>pull</code> for files and screenshots, <code>screenrecord</code></label></li>
+            <li class="step"><input type="checkbox" data-step="1"><label>Read a real crash: capture logcat while reproducing, find the stack trace inside the noise, and attach it to an actual bug report</label></li>
+            <li class="step"><input type="checkbox" data-step="2"><label>The iOS equivalent: Console.app and the Xcode Devices and Simulators window — capture a device log, and read a crash report</label></li>
+            <li class="step"><input type="checkbox" data-step="3"><label>Android Studio beyond the emulator: Logcat, the Device File Explorer for app data, and the network profiler</label></li>
+            <li class="step"><input type="checkbox" data-step="4"><label>Simulate conditions at the OS level rather than inside the app: a permission revoked mid-flow, low memory, doze mode, airplane mode, mocked GPS. The geolocation case you described is precisely this category of testing</label></li>
+            <li class="step"><input type="checkbox" data-step="5"><label>Interruptions as a named, planned dimension rather than an improvisation: incoming call, push notification, screen lock, rotation, app backgrounded or killed, low battery</label></li>
+            <li class="step"><input type="checkbox" data-step="6"><label>Trigger deep links and push payloads through ADB, so you can test those paths without waiting for a backend trigger</label></li>
+            <li class="step"><input type="checkbox" data-step="7"><label>Raise the team standard wherever you are: every mobile crash ticket carries a log. Write the short how-to and walk the team through it once — the same play you already ran with test documentation</label></li>
+          </ul>
+        </div>
+        <div class="field">
+          <div class="field-label">Expected result</div>
+          <div class="expected">Uses ADB routinely — installing builds, filtering logcat, pulling files, recording screens — and captures a stack trace from a live reproduction to attach to a ticket. Does the equivalent on iOS through Console.app and Xcode Devices, including reading a crash report. Works inside Android Studio's Logcat, file explorer and network profiler. Plans OS-level conditions and interruptions as named test dimensions rather than improvising them, triggers deep links and push payloads through ADB, and has raised the team's standard so that mobile crash tickets carry logs by default.</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Resources</div>
+          <div class="resources"><i>Suggested:</i> Android Developers — ADB and Logcat documentation · Apple — Devices and Simulators, and crash report reading · whatever device pool you have access to</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Notes / progress log</div>
+          <textarea class="notes" placeholder="Jot down questions, links you found useful, or what clicked..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="case" data-case="QA-IDP-09">
+      <div class="case-head">
+        <div class="case-head-left">
+          <span class="case-id">QA-IDP-09</span>
+          <span class="case-title">Virtualization &amp; Test Environments — the basics</span>
+          <span class="priority medium">Medium</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="status-badge todo" data-status="">NOT STARTED</span>
+          <span class="chev">▾</span>
+        </div>
+      </div>
+      <div class="case-body">
+        <div class="field">
+          <div class="field-label">Starting point</div>
+          <div class="precondition"><b>Virtualization &amp; Cloud</b> was the lowest-scoring area on the whole assessment at 1.0, and the note names the specific moment — the question about deploying temporary test environments didn't land. <b>This case is deliberately small.</b> Virtualization is the least likely of all these topics to turn up in your daily work, so building a large block here would be study with nowhere to land. What is worth having is the vocabulary and one afternoon of hands-on, so the topic is no longer a blank in an assessment and so you can read what the infrastructure side is doing. The one part with genuine practical value is the temporary-environment question itself, because environments are a live constraint on testing work — and it is something you have raised yourself before, listing more test environments among the things you were proud of proposing this period.</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Steps to learn</div>
+          <ul class="steps">
+            <li class="step"><input type="checkbox" data-step="0"><label>Virtualization vs containerization, and why either matters to QA: a VM runs its own operating system and isolates fully but is heavy; a container shares the host kernel and starts in seconds. The QA reasons to care — environment parity, isolation, snapshots and rollback, OS combinations you own no hardware for</label></li>
+            <li class="step"><input type="checkbox" data-step="1"><label>One afternoon of hands-on, and that is enough: run a VM in VirtualBox or UTM with a different OS, install something, take a snapshot, break it deliberately, roll back</label></li>
+            <li class="step"><input type="checkbox" data-step="2"><label>Docker to a <i>reading</i> minimum — image vs container, then <code>docker ps</code>, <code>docker logs</code>, <code>docker compose up</code>. The goal is being able to start a stack and read why it failed, not to become fluent</label></li>
+            <li class="step"><input type="checkbox" data-step="3"><label><b>The temporary environment question, answered properly</b> — the one part of this case with immediate value: what an ephemeral or on-demand environment is, roughly what it costs, and specifically how a per-branch or per-release environment would change your regression work</label></li>
+          </ul>
+        </div>
+        <div class="field">
+          <div class="field-label">Expected result</div>
+          <div class="expected">Explains virtualization against containerization and why each matters to QA, having built, snapshotted and rolled back a VM once himself, and can start a containerised stack and read its logs. Answers the temporary-environment question concretely — what ephemeral environments are, roughly what they cost, and what per-branch environments would change about his regression work. The area is no longer a blank; depth here waits until a project actually offers the work.</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Resources</div>
+          <div class="resources"><i>Suggested:</i> Docker "Get Started" guide (the first two pages are enough) · VirtualBox or UTM · one walkthrough of the existing setup with whoever owns infrastructure on your project</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Notes / progress log</div>
+          <textarea class="notes" placeholder="Jot down questions, links you found useful, or what clicked..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="case" data-case="QA-IDP-10">
+      <div class="case-head">
+        <div class="case-head-left">
+          <span class="case-id">QA-IDP-10</span>
+          <span class="case-title">Senior 2 Readiness Dry-Run</span>
+          <span class="priority high">High</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="status-badge todo" data-status="">NOT STARTED</span>
+          <span class="chev">▾</span>
+        </div>
+      </div>
+      <div class="case-body">
+        <div class="field">
+          <div class="field-label">Starting point</div>
+          <div class="precondition">July 2026 came in at 50.8 / 75 (67.7%) against a Senior 2 threshold of 50 — over the line, but by less than a point, and carried there by the areas you own rather than by technical breadth. Worth saying plainly, because it is also the risk named in the review summary: process maturity and quality ownership are at Senior-to-Lead level, while networks, databases, API and virtualization sit at Middle, largely because the project has not supplied that kind of work. Senior 3 is 55. The second thing to calibrate is the self-assessment: yours was 60.1 against 50.8, and the −9.3 gap sits almost entirely in the areas you no longer practise — API −1.33, virtualization −1, desktop −1, SDLC models −1. In everything you actually own, your self-rating was accurate. That is a useful pattern to know about yourself: you rate what you know, not what you currently do.</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Steps to learn</div>
+          <ul class="steps">
+            <li class="step"><input type="checkbox" data-step="0"><label>Re-score yourself against all 15 skill areas of the review form, without looking at the July version, then compare. Target is landing within ±3 points of the lead score</label></li>
+            <li class="step"><input type="checkbox" data-step="1"><label>For the four areas you over-rated in July — API, virtualization, desktop, SDLC models — score against what you have <i>done</i> over the year, not what you know how to do</label></li>
+            <li class="step"><input type="checkbox" data-step="2"><label>Bring the artefacts, not the answers: risk map, regression tiering, release-readiness checklist, Postman collection, compatibility matrix and the automation candidate list. At this level the assessment goes better with evidence on the table than with good recall</label></li>
+            <li class="step"><input type="checkbox" data-step="3"><label>Rehearse the Senior-level questions out loud, since they are asked differently at this level — in terms of strategy and of the team, not of your own procedure — designing a regression strategy for a growing product; deciding what not to test and justifying it to stakeholders; isolating root cause in a distributed system; driving better acceptance criteria across the team; preventing testing gaps at team level rather than your own</label></li>
+            <li class="step"><input type="checkbox" data-step="4"><label>For each thing you do well individually, name the team-level version of it. That is the Senior 2 to Senior 3 axis, and it is the one place your profile is already ahead of the score</label></li>
+          </ul>
+        </div>
+        <div class="field">
+          <div class="field-label">Expected result</div>
+          <div class="expected">Self-assessment lands within ±3 points of the lead score, with the four previously over-rated areas scored against what he has done rather than what he knows. Projected total comfortably clear of the 50-point Senior 2 threshold on technical breadth as well as process, with Senior 3 (55) a realistic next step. Arrives at the assessment with the artefacts from cases 01–09 on the table, answers the Senior-level questions in strategy rather than procedure terms, and can state the team-level version of each thing he currently does well on his own.</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Resources</div>
+          <div class="resources"><i>Suggested:</i> the QA Performance Review form (15 sections) · Competency Matrix — Senior tab · the artefacts produced across cases 01–09</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Notes / progress log</div>
+          <textarea class="notes" placeholder="Jot down questions, links you found useful, or what clicked..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <h3>How to use this plan</h3>
+    <p>Work roughly one phase at a time, but feel free to move faster on anything that clicks quickly. Check off each step as you complete it — a test case flips to <b>PASS</b> once every step inside it is checked.</p>
+    <p>Phase 1 is deliberately first: API and networks are the widest technical gaps, and the later cases — the JMeter task, the data checks, the risk map — lean on what you build there.</p>
+    <p>Your progress is saved automatically in this document, so you can close it and come back anytime over the next 12 months.</p>
+    <p>Reach out to Tetiana (QA Lead) whenever you need help or want to talk something through. Full re-assessment against the same rubric happens in July 2027, a year after the last one.</p>
+  </div>
+
+  <p class="save-note" id="saveNote">Starting a fresh plan — progress will be saved automatically from now on.</p>
+
+</div>
+
+<script>
+(function(){
+  const CASES = {
+    "QA-IDP-01": 9, "QA-IDP-02": 8, "QA-IDP-03": 9, "QA-IDP-04": 8,
+    "QA-IDP-05": 6, "QA-IDP-06": 8, "QA-IDP-07": 7, "QA-IDP-08": 8,
+    "QA-IDP-09": 4, "QA-IDP-10": 5
+  };
+  const PHASE_CASES = {
+    p1: ["QA-IDP-01","QA-IDP-02","QA-IDP-03","QA-IDP-04"],
+    p2: ["QA-IDP-05","QA-IDP-06"],
+    p3: ["QA-IDP-07","QA-IDP-08","QA-IDP-09","QA-IDP-10"]
+  };
+  const STORAGE_KEY = "idp-maksym-2026-progress";
+
+  let state = {};
+  Object.keys(CASES).forEach(id => {
+    state[id] = { steps: new Array(CASES[id]).fill(false), notes: "" };
+  });
+
+  /* Works both as a hosted page (localStorage) and inside a document
+     host that provides window.storage. */
+  const store = {
+    async get(){
+      if (window.storage && typeof window.storage.get === 'function'){
+        const r = await window.storage.get(STORAGE_KEY, false);
+        return r && r.value ? r.value : null;
+      }
+      return localStorage.getItem(STORAGE_KEY);
+    },
+    async set(value){
+      if (window.storage && typeof window.storage.set === 'function'){
+        return window.storage.set(STORAGE_KEY, value, false);
+      }
+      localStorage.setItem(STORAGE_KEY, value);
+    }
+  };
+
+  function caseStatus(id){
+    const st = state[id];
+    const total = st.steps.length;
+    const done = st.steps.filter(Boolean).length;
+    if (done === 0) return 'todo';
+    if (done === total) return 'pass';
+    return 'progress';
+  }
+
+  function statusLabel(s){
+    if (s === 'pass') return 'PASS';
+    if (s === 'progress') return 'IN PROGRESS';
+    return 'NOT STARTED';
+  }
+
+  function render(){
+    Object.keys(CASES).forEach(id => {
+      const card = document.querySelector(`.case[data-case="${id}"]`);
+      if (!card) return;
+      const st = state[id];
+      card.querySelectorAll('.step').forEach((stepEl, i) => {
+        const cb = stepEl.querySelector('input[type=checkbox]');
+        cb.checked = !!st.steps[i];
+        stepEl.classList.toggle('checked', !!st.steps[i]);
+      });
+      const notesEl = card.querySelector('textarea.notes');
+      if (notesEl && notesEl.value !== st.notes) notesEl.value = st.notes;
+
+      const s = caseStatus(id);
+      const badge = card.querySelector('[data-status]');
+      badge.textContent = statusLabel(s);
+      badge.className = 'status-badge ' + s;
+    });
+    updateProgressBars();
+  }
+
+  function updateProgressBars(){
+    let totalSteps = 0, totalDone = 0;
+    Object.keys(CASES).forEach(id => {
+      totalSteps += state[id].steps.length;
+      totalDone += state[id].steps.filter(Boolean).length;
+    });
+    const pct = totalSteps ? Math.round((totalDone/totalSteps)*100) : 0;
+    document.getElementById('overallPct').textContent = pct + '%';
+    document.getElementById('overallBar').style.width = pct + '%';
+    document.getElementById('overallLabel').textContent = `${totalDone} / ${totalSteps} steps passed`;
+
+    Object.keys(PHASE_CASES).forEach(p => {
+      let pTotal = 0, pDone = 0;
+      PHASE_CASES[p].forEach(id => {
+        pTotal += state[id].steps.length;
+        pDone += state[id].steps.filter(Boolean).length;
+      });
+      const ppct = pTotal ? Math.round((pDone/pTotal)*100) : 0;
+      const fillEl = document.querySelector(`[data-qfill="${p}"]`);
+      const labelEl = document.querySelector(`[data-qlabel="${p}"]`);
+      if (fillEl) fillEl.style.width = ppct + '%';
+      if (labelEl) labelEl.textContent = ppct + '%';
+    });
+  }
+
+  let saveTimer = null;
+  function scheduleSave(){
+    const note = document.getElementById('saveNote');
+    note.textContent = 'Saving…';
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(async () => {
+      try{
+        await store.set(JSON.stringify(state));
+        note.textContent = 'Progress saved · ' + new Date().toLocaleTimeString();
+      }catch(e){
+        note.textContent = 'Could not save progress — your changes may not persist after closing this document.';
+      }
+    }, 500);
+  }
+
+  async function loadState(){
+    const note = document.getElementById('saveNote');
+    try{
+      const raw = await store.get();
+      if (raw){
+        const saved = JSON.parse(raw);
+        Object.keys(CASES).forEach(id => {
+          if (saved[id]){
+            state[id].steps = (saved[id].steps || []).slice(0, CASES[id]);
+            while (state[id].steps.length < CASES[id]) state[id].steps.push(false);
+            state[id].notes = saved[id].notes || "";
+          }
+        });
+      }
+      note.textContent = 'Progress saved automatically in this document.';
+    }catch(e){
+      note.textContent = 'Starting a fresh plan — progress will be saved automatically from now on.';
+    }
+    render();
+  }
+
+  function bindEvents(){
+    document.querySelectorAll('.case-head').forEach(head => {
+      head.addEventListener('click', () => {
+        head.closest('.case').classList.toggle('open');
+      });
+    });
+
+    document.querySelectorAll('.case').forEach(card => {
+      const id = card.getAttribute('data-case');
+      card.querySelectorAll('.step input[type=checkbox]').forEach((cb, i) => {
+        cb.addEventListener('click', (e) => e.stopPropagation());
+        cb.addEventListener('change', () => {
+          state[id].steps[i] = cb.checked;
+          cb.closest('.step').classList.toggle('checked', cb.checked);
+          const s = caseStatus(id);
+          const badge = card.querySelector('[data-status]');
+          badge.textContent = statusLabel(s);
+          badge.className = 'status-badge ' + s;
+          updateProgressBars();
+          scheduleSave();
+        });
+      });
+      const notesEl = card.querySelector('textarea.notes');
+      if (notesEl){
+        notesEl.addEventListener('click', (e) => e.stopPropagation());
+        notesEl.addEventListener('input', () => {
+          state[id].notes = notesEl.value;
+          scheduleSave();
+        });
+      }
+    });
+
+    // open first case of each phase by default
+    document.querySelectorAll('.phase').forEach(p => {
+      const first = p.querySelector('.case');
+      if (first) first.classList.add('open');
+    });
+  }
+
+  bindEvents();
+  loadState();
+})();
+</script>
+
+</body>
+</html>
